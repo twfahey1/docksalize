@@ -11,9 +11,9 @@
     "extra": {
         "drupal-scaffold": {
           "file-mapping": {
-            "[web-root]/.docksal/docksal.env": "docksal.env",
-            "[web-root]/.docksal/docksal.yml": "docksal.yml",
-            "[web-root]/.vscodel/settings.json": "vscode/default.settings.json"
+            ".docksal/docksal.env": "docksal.env",
+            ".docksal/docksal.yml": "docksal.yml",
+            ".vscode/settings.json": "vscode/default.settings.json"
             
           }
         }
