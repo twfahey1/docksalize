@@ -13,8 +13,12 @@
           "file-mapping": {
             "[project-root]/.docksal/docksal.env": "docksal.env",
             "[project-root]/.docksal/docksal.yml": "docksal.yml",
-            "[project-root]/.vscode/settings.json": "vscode/default.settings.json"
-            
+            "[project-root]/.vscode/settings.json": "vscode/default.settings.json",
+            "[web-root]/sites/default/settings.local.php": {
+                "mode": "replace",
+                "path": "drupal/default.settings.local.php",
+                "overwrite": false
+            }
           }
         }
       }
