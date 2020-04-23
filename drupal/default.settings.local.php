@@ -162,3 +162,9 @@ if (PHP_SAPI !== 'cli') {
     $_SERVER['SERVER_PORT'] = 443;
   }
 }
+
+# Dev email settings to avoid sending out emails
+$config['system.mail']['interface']['default'] = 'test_mail_collector';
+
+# Add a default hash salt
+$settings['hash_salt'] = 'faoo';
