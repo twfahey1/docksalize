@@ -49,8 +49,10 @@ init_settings ()
 	# copy_settings_file "${PROJECT_ROOT}/.docksal/drupal/default.local-settings.php" "${SITEDIR_PATH}/local-settings.php"
 	# If using Drupal 8, uncomment this line:
 	copy_settings_file "${PROJECT_ROOT}/.docksal/drupal/default.local-settings.php" "${SITEDIR_PATH}/settings.local.php"
-	printf "\nrequire 'settings.local.php';" >> "${SITEDIR_PATH}/settings.php"
-
+	echo "Adding settings.local.php include to settings.php"
+	printf "\nif (file_exists('settings.local.php')) { \nrequire 'settings.local.php';\n}" >> "${SITEDIR_PATH}/settings.php"
+	echo "Updating gitignore"
+	printf "\nsettings.local.php\n" >> "${PROJECT_ROOT}/.gitignore"
 	# Copy htaccess
 	copy_settings_file "${PROJECT_ROOT}/.docksal/drupal/default.htaccess" "${DOCROOT_PATH}/.htaccess"
 }
