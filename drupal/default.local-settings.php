@@ -2,13 +2,11 @@
 
 # Docksal DB connection settings.
 $databases['default']['default'] = array (
+  'database' => getenv('MYSQL_DATABASE'),
+  'username' => getenv('MYSQL_USER'),
+  'password' => getenv('MYSQL_PASSWORD'),
+  'host' => getenv('MYSQL_HOST'),
   'driver' => 'mysql',
-  'database' => 'default',
-  'username' => 'user',
-  'password' => 'user',
-  'host' => 'db',
-  'charset' => 'utf8mb4',
-  'collation' => 'utf8mb4_general_ci'
 );
 # File system settings.
 $conf['file_temporary_path'] = '/tmp';
