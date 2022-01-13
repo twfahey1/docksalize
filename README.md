@@ -1,4 +1,4 @@
-# Docksal Local development
+# Docksal Pack - Local development
 
 ## Install Docksal
 https://docs.docksal.io/getting-started/setup/
