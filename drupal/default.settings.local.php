@@ -167,4 +167,4 @@ if (PHP_SAPI !== 'cli') {
 $config['system.mail']['interface']['default'] = 'test_mail_collector';
 
 # Add a default hash salt
-$settings['hash_salt'] = 'faoo';
+$settings['hash_salt'] = '32c1b1d6-10e0-45aa-8244-816705dabd3f';
