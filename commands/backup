@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-# Runs "fin db dump database_dumps/" + a timestamp of hh-mm-ss-dd-mm-yy.sql
+# Runs "fin db dump database_dumps/" + a timestamp of yy-mm-dd-hh-mm-ss.sql
 
 # This is a custom command for Docksal. See https://docs.docksal.io/fin/custom-commands/
 # for more information.
 
-fin db dump database_dumps/$(date +%H-%M-%S-%d-%m-%Y).sql
+fin db dump database_dumps/$(date +"%y-%m-%d-%H-%M-%S").sql
