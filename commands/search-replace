@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Run find/replace for the site.
+fin wp search-replace ${PANTHEON_SITE_ENV}-${PROJECT_NAME}.pantheonsite.io ${PROJECT_NAME}.docksal.site
+fin wp search-replace texasmoodymedia.org ${PROJECT_NAME}.docksal.site
+fin wp search-replace https://${PROJECT_NAME}.docksal.site http://${PROJECT_NAME}.docksal.site
