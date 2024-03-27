@@ -1,24 +1,31 @@
-# Docksal Pack - Local development
+# Docksalize - Optimal Docksal based dev environment
 
 ## Install Docksal
 https://docs.docksal.io/getting-started/setup/
 
-## Install Terminus
+## Optional: Install Terminus for use with Pantheon
 https://pantheon.io/docs/terminus/install
+
+## Optional: Setup an alias in your `.zshrc` / `.bash_profile` shell:
+Quickly get new projects setup with a `docksalize` shell shortcut:
+`alias docksalize=git clone https://github.com/twfahey1/docksalize.git .docksal`
 
 ## Configuring the docroot
 * If you have your site inside another folder, e.g. `web`, set that in the `docksal.env` as the `DOCROOT` setting. Otherwise, leave it as the default `.` setting.
 
-## Configure the `init-site` command
-* If you're using Drupal 7, adjust the `init_settings()` function in the `init-site` command so that the appropriate local settings file is copied when setting up.
-
 ## Initialize containers.
-* `fin init`
+* `fin up`
 
-## Setup Drupal with required files.
-* `fin init-site`
+### Helpful container commands
+* `fin bash` - SSH into the container and run commands from within the CLI container.
+* `fin project reset` - Deletes and restarts the containers, *will wipe out database*, but can be helpful for environments that get into buggy states, e.g. switching container images, corrupt database, etc.
+* `fin db create [whatever]` - Create a new database within the database container. By default it will have one, but in cases of adding secondary database for certain applications
+* `fin db import --db=['whatever'] [path_to_db]` - Related to above, import a DB dump into a specific DB on the project DB container.
 
-## Running tests
+## Drupal: Run the appropriate `init-site` command
+* If you're using Drupal 7, run `fin init-site-d7`, for D10+, run `fin init-site`. This copies the appropriate `settings.local.php` and attempts to get things configured in the `settings.php` to include the `settings.local.php`. See the command definitions for more.
+  
+## Drupal: Running tests
 * For first time setup, run `fin test-init`. This will copy over the default files from the `.docksal/drupal/testing-defaults` folder, and update them to match your current Docksal virtual host.
 * There are 2 commands to run testing - `test`, for functional testing, and `test-js`, for Javascript based testing. More details on the commands can be found in the command files themselves - `.docksal/commands/test` and `.docksal/commands/test-js`. They both function largely the same way, but are configured to use corresponding `phpunit.xml` files located in `.docksal/drupal/testing` folder.
 * To ensure proper functionality, the `SIMPLETEST_BASE_URL` has to be updated to match the Docksal virtual host name. In most cases, this is taken care of when running `fin test-init`. As part of this command, it will update the appropriate `phpunit.xml` files automatically. This does a basic find and replace operation via perl, replacing the default `web` string with the Docksal variable `${VIRTUAL_HOST}`.
