@@ -1,5 +1,6 @@
 version: "2.1"
 services:
+  # phpMyAdmin
   pma:
     hostname: pma
     image: phpmyadmin/phpmyadmin
@@ -9,3 +10,8 @@ services:
       - PMA_PASSWORD=${MYSQL_ROOT_PASSWORD:-root}
     labels:
       - io.docksal.virtual-host=pma-${VIRTUAL_HOST}
+  # MailHog
+  mail:
+    extends:
+      file: ${HOME}/.docksal/stacks/services.yml
+      service: mail
