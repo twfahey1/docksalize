@@ -4,5 +4,7 @@
 
 # This is a custom command for Docksal. See https://docs.docksal.io/fin/custom-commands/
 # for more information.
-
-fin db dump database_dumps/$(date +"%y-%m-%d-%H-%M-%S").sql
+$dump_timestamp=$(date +"%y-%m-%d-%H-%M-%S")
+# Echo out the path of the dump file
+echo "Dumping database to database_dumps/$dump_timestamp.sql"
+fin db dump database_dumps/$dump_timestamp.sql
