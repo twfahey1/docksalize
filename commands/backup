@@ -5,6 +5,10 @@
 # This is a custom command for Docksal. See https://docs.docksal.io/fin/custom-commands/
 # for more information.
 dump_timestamp=$(date +"%y-%m-%d-%H-%M-%S")
+
+# Ensure the database_dumps directory exists
+mkdir -p database_dumps
+
 # Echo out the path of the dump file
 echo "Dumping database to database_dumps/$dump_timestamp.sql"
 fin db dump database_dumps/$dump_timestamp.sql
