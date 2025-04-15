@@ -4,7 +4,17 @@
 # Note this is dependent on the terminus rsync plugin:
 # https://github.com/pantheon-systems/terminus-rsync-plugin
 
-echo "Rsyncing files from ${PROJECT_NAME}.${PANTHEON_SITE_ENV}"
 DOCROOT_PATH="${PROJECT_ROOT}/${DOCROOT}"
 dest="${DOCROOT_PATH}/sites/default"
-terminus rsync ${PROJECT_NAME}.${PANTHEON_SITE_ENV}:files ${dest}
+
+# Check if a specific path was provided
+if [ $# -eq 0 ]; then
+    # No path specified, sync everything
+    echo "Rsyncing all files from ${PROJECT_NAME}.${PANTHEON_SITE_ENV}"
+    terminus rsync ${PROJECT_NAME}.${PANTHEON_SITE_ENV}:files ${dest}
+else
+    # Specific path provided, sync only that folder
+    specific_path=$1
+    echo "Rsyncing specific path '${specific_path}' from ${PROJECT_NAME}.${PANTHEON_SITE_ENV}"
+    terminus rsync ${PROJECT_NAME}.${PANTHEON_SITE_ENV}:files${specific_path} ${dest}/files${specific_path}
+fi
