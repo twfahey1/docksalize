@@ -21,7 +21,7 @@ import_database ()
   echo "Downloading copy of env database...";
   terminus backup:get ${PROJECT_NAME}.${PANTHEON_SITE_ENV} --element=database | xargs curl -o database_dumps/db.sql.gz
   echo "Extracting and importing copy of ${PANTHEON_SITE_ENV} database...";
-  exec "gunzip -fk database_dumps/db.sql.gz"
+  gunzip -fk database_dumps/db.sql.gz
   fin db import "database_dumps/db.sql"
 }
 
