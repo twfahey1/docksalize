@@ -1,0 +1,132 @@
+#!/usr/bin/env bash
+
+## Rsync specific page assets from Pantheon
+##
+## Usage: fin rsyncpage <url>
+
+# Abort if anything fails
+set -e
+
+# Get the URL from command argument
+PAGE_URL="$1"
+
+if [ -z "$PAGE_URL" ]; then
+    echo "Error: URL is required"
+    echo "Usage: fin rsyncpage <url>"
+    exit 1
+fi
+
+# Create a temporary file to store the HTML
+TEMP_HTML=$(mktemp)
+
+# Fetch the page HTML
+echo "Fetching page content from: $PAGE_URL"
+curl -s -L \
+    -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36" \
+    -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" \
+    -H "Accept-Language: en-US,en;q=0.5" \
+    -H "Connection: keep-alive" \
+    -H "Upgrade-Insecure-Requests: 1" \
+    "$PAGE_URL" > "$TEMP_HTML"
+
+# Debug: Show a snippet of the HTML to verify we got content
+echo "Debug: First few lines of HTML content:"
+head -n 5 "$TEMP_HTML"
+echo "Debug: Looking for img tags:"
+grep -o '<img[^>]*>' "$TEMP_HTML" | head -n 2
+
+# Extract image paths using grep and sed
+# This looks for src attributes in img tags and extracts the path, handling complex img tags
+echo "Extracting image paths..."
+# First, save the raw HTML for debugging
+echo "Debug: Saving full HTML for inspection..."
+cp "$TEMP_HTML" "/tmp/debug_page.html"
+echo "Debug: Full HTML saved to /tmp/debug_page.html"
+
+# More comprehensive image extraction
+IMAGE_PATHS=$(cat "$TEMP_HTML" | tr '\n' ' ' | grep -o -E '<img[^>]+src="[^"]+"|<img[^>]+src='"'"'[^'"'"']+'"'"'' | sed -E 's/.*src=["'"'"']([^"'"'"']*)["'"'"'].*/\1/')
+
+# Debug: Show all found image paths
+echo "Debug: Found these image paths:"
+echo "$IMAGE_PATHS" | while read -r path; do
+    echo "  Found path: '$path'"
+done
+
+# Create a temporary file to store rsync commands
+TEMP_RSYNC_SCRIPT=$(mktemp)
+
+# Process each image path
+while IFS= read -r img_path; do
+    echo "Debug: Processing path: '$img_path'"
+    # Skip empty lines and external URLs
+    if [[ -z "$img_path" || "$img_path" =~ ^http[s]?:// ]]; then
+        echo "Debug: Skipping - empty or external URL"
+        continue
+    fi
+    
+    # Remove leading slash if present
+    img_path="${img_path#/}"
+    echo "Debug: After removing leading slash: '$img_path'"
+    
+    # Only process files paths, including those in sites/default/files
+    if [[ "$img_path" == files/* ]] || [[ "$img_path" == *"/files/"* ]]; then
+        echo "Debug: Path matches files pattern"
+        
+        # Remove any query parameters (everything after ?)
+        img_path=${img_path%%\?*}
+        
+        # Ensure path starts with files/
+        if [[ ! "$img_path" =~ ^/?files/ ]]; then
+            if [[ "$img_path" =~ ^/?sites/default/files/ ]]; then
+                img_path=$(echo "$img_path" | sed -E 's|^/?sites/default/files/|files/|')
+            else
+                img_path="files/$img_path"
+            fi
+        fi
+        
+        # Remove any leading slash
+        img_path="${img_path#/}"
+        
+        echo "Processing: $img_path"
+        
+        # Create the target directory structure
+        target_dir="${DOCROOT}/sites/default/$(dirname "$img_path")"
+        echo "mkdir -p \"$target_dir\"" >> "$TEMP_RSYNC_SCRIPT"
+        
+        # If this is a style directory, extract and sync the original image
+        if [[ "$img_path" =~ ^files/styles/ ]]; then
+            # Extract just the year and filename portion from the path
+            # e.g., from: files/styles/moody_image_style_500w_712h/public/2025-08/image.jpg
+            # to: files/2025-08/image.jpg
+            source_path=$(echo "$img_path" | sed -E 's|^files/styles/[^/]+/public/|files/|')
+            
+            # Create decoded versions of the paths for both source and destination
+            decoded_path=$(echo "$source_path" | python3 -c 'import sys; from urllib.parse import unquote; print(unquote(sys.stdin.read().strip()))')
+            
+            echo "# Syncing original image for style derivative" >> "$TEMP_RSYNC_SCRIPT"
+            echo "terminus rsync ${PROJECT_NAME}.${PANTHEON_SITE_ENV}:'$decoded_path' '${DOCROOT}/sites/default/$decoded_path'" >> "$TEMP_RSYNC_SCRIPT"
+            
+            # Also ensure the styles directory exists locally (for Drupal to generate derivatives)
+            style_dir="${DOCROOT}/sites/default/$(dirname "$img_path")"
+            echo "mkdir -p \"$style_dir\"" >> "$TEMP_RSYNC_SCRIPT"
+        else
+            # Regular file, just sync it
+            # Create decoded version of the path for both source and destination
+            decoded_path=$(echo "$img_path" | python3 -c 'import sys; from urllib.parse import unquote; print(unquote(sys.stdin.read().strip()))')
+            echo "terminus rsync ${PROJECT_NAME}.${PANTHEON_SITE_ENV}:'$decoded_path' '${DOCROOT}/sites/default/$decoded_path'" >> "$TEMP_RSYNC_SCRIPT"
+        fi
+    fi
+done <<< "$IMAGE_PATHS"
+
+# Execute the rsync commands
+if [ -s "$TEMP_RSYNC_SCRIPT" ]; then
+    echo "Syncing found images..."
+    bash "$TEMP_RSYNC_SCRIPT"
+else
+    echo "No local files found to sync"
+fi
+
+# Cleanup temporary files
+rm -f "$TEMP_HTML" "$TEMP_RSYNC_SCRIPT"
+
+echo "Page asset sync completed!"
